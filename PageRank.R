@@ -17,49 +17,45 @@ A_gen <- function (n, p) {
 }
 
 # Define PageRank function (p = probability of teleport)
-PageRank <- function (A, p, n_iter, output = T) {
+PageRank <- function (A, p, output = T) {
   
   # Define assertions
   if (!is.matrix(A) | !all(A %in% 0:1)) {
     stop(noquote('no (valid) adjacency matrix is provided.'))
   } else if (!is.numeric(p) | p < 0 | p > 1) {
     stop(noquote('p must be a probability between 0 and 1.'))
-  } else if (!n_iter%%1==0 | n_iter < 1) {
-    stop(noquote('n_iter must be a positive integer.'))
   }
   
   # Initialize transition matrix
-  s <- matrix(rep(NA, ncol(A) * (n_iter+1)), nrow = n_iter+1, ncol = ncol(A))
+  s <- matrix(rep(NA, ncol(A)), ncol = ncol(A))
   s[1, ] <- rep(1/ncol(A), ncol(A))
+  i <- 1
   
-  # Repeat Markov Chain for n_iter iterations
-  for (i in 1:n_iter) {
+  # Repeat Markov Chain until convergence
+  while (T) {
     
     # Calculate transition vector at t + 1
+    t <- rep(NA, ncol(A))
     for (j in 1:ncol(A)) {
-      s[i+1, j] <- ifelse(sum(A[j, ]) == 0 
-                          , 1 / ncol(A)
-                          , p / ncol(A) + (1 - p) * sum(A[, j] * (s[i, ] / apply(A, 1, sum))))
+      t[j] <- ifelse(sum(A[j, ]) == 0 
+                     , 1 / ncol(A)
+                     , p / ncol(A) + (1 - p) * sum(A[, j] * (s[i, ] / apply(A, 1, sum))))
     }
+    s <- rbind(s, t)
+    i <- i + 1
     
     # Break if converged
-    if (i > 1) if (all(round(s[i, ], 4) == round(s[i+1, ], 4))) break
+    if (i > 1) if (all(round(s[i - 1, ], 4) == round(s[i, ], 4))) break
   }
   
   # Build and return output
-  rank <- data.frame(as.character(1:ncol(s)), round(s[i+1, ], 4), rep(p, ncol(A)))
+  rank <- data.frame(as.character(1:ncol(s)), round(s[i, ], 4), rep(p, ncol(A)))
   colnames(rank) <- c('Node', 'PageRank', 'P')
   
   if (output) {
-    if (i == n_iter) {
-      cat(noquote('PageRank Output:\n\n'))
-      print(rank[order(-rank$PageRank), c('Node', 'PageRank')], row.names = F)
-      cat(noquote(paste('\nWarning: PageRank did not converge in', i, 'iterations.')))
-    } else {
-      cat(noquote('PageRank Output:\n\n'))
-      print(rank[order(-rank$PageRank), c('Node', 'PageRank')], row.names = F)
-      cat(noquote(paste('\nPageRank converged in', i, 'iterations.')))
-    }
+    cat(noquote('PageRank Output:\n\n'))
+    print(rank[order(-rank$PageRank), c('Node', 'PageRank')], row.names = F)
+    cat(noquote(paste('\nPageRank converged in', i, 'iterations.')))
   } else {
     return(rank[order(-rank$PageRank), ])
   }
