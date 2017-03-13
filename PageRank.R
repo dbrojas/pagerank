@@ -70,8 +70,8 @@ A <- A_gen(10, .6)
 library(igraph)
 plot(graph.adjacency(A,'directed'))
 
-# Do 100 PageRank iterations on example graph with P(teleport) = 0.2
-PageRank(A, .2, 100)
+# Do PageRank on example graph with P(teleport) = 0.2
+PageRank(A, .2)
 
 
 # Effect of P(teleport) on ranking  
