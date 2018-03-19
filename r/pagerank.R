@@ -63,7 +63,7 @@ PageRank <- function (A, p, output = T) {
 
 
 # Load/generate an adjacency matrix
-A <- A_load('~/Desktop/R/PageRank/A_big.txt')
+A <- A_load('../A_big.txt')
 A <- A_gen(10, .6)
 
 # Plot the graph
